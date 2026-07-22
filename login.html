@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — WaveLink</title>
+<meta name="description" content="Log in to WaveLink and connect your Roblox account." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* ---- Page-specific: auth screen ---- */
+.auth-shell{
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-top{
+  padding: 26px 0;
+}
+
+.auth-main{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card{
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(180deg, rgba(20,27,42,0.85), rgba(11,15,24,0.85));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 40px 80px -30px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  padding: 36px 32px 32px;
+  text-align: center;
+}
+
+.auth-mark{
+  width: 56px; height: 56px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 20px;
+  filter: drop-shadow(0 6px 20px rgba(63, 214, 255, 0.45));
+}
+.auth-mark img{ width: 100%; height: 100%; object-fit: contain; }
+
+.auth-card h1{
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+
+.auth-card > p.sub{
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.roblox-btn{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.roblox-btn:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+.roblox-btn:disabled{ opacity: 0.7; cursor: default; transform: none; }
+
+.roblox-btn .glyph{
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  background: linear-gradient(155deg, #f2f2f2, #b9b9b9);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.roblox-btn .glyph svg{ width: 12px; height: 12px; }
+
+.roblox-btn .spinner{
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.18);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.roblox-btn.loading .spinner{ display: inline-block; }
+.roblox-btn.loading .glyph{ display: none; }
+
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+.auth-divider{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+}
+.auth-divider::before, .auth-divider::after{
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-soft);
+}
+.auth-divider span{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-field{
+  text-align: left;
+  margin-bottom: 14px;
+}
+.auth-field label{
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+}
+.auth-field input{
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+.auth-field input:focus{ border-color: rgba(63,214,255,0.4); }
+.auth-field input::placeholder{ color: var(--text-faint); }
+
+.auth-note{
+  font-size: 12.5px;
+  color: var(--text-faint);
+  line-height: 1.6;
+  margin-top: 22px;
+}
+.auth-note a{ color: var(--accent-soft); }
+
+.auth-back{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  margin-top: 24px;
+}
+.auth-back svg{ width: 14px; height: 14px; }
+.auth-back:hover{ color: var(--text); }
+
+/* ---- Simulated OAuth consent overlay ---- */
+.consent-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 5, 9, 0.7);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+.consent-overlay.open{ opacity: 1; pointer-events: auto; }
+
+.consent-card{
+  width: 100%;
+  max-width: 380px;
+  background: #101725;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 50px 100px -30px rgba(0,0,0,0.75);
+  padding: 28px 26px 24px;
+  transform: translateY(14px) scale(0.98);
+  transition: transform 0.3s var(--ease);
+}
+.consent-overlay.open .consent-card{ transform: translateY(0) scale(1); }
+
+.consent-header{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.consent-header .glyph{
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(155deg, #f2f2f2, #b9b9b9);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.consent-header .glyph svg{ width: 20px; height: 20px; }
+.consent-header h3{ margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 700; color: #0b0e14; }
+
+.consent-card-inner-title{ font-size: 13px; color: var(--text-dim); margin: 0 0 16px; line-height: 1.55; }
+.consent-card-inner-title b{ color: var(--text); }
+
+.consent-perms{
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.consent-perms li{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.consent-perms li svg{ width: 15px; height: 15px; color: var(--success); flex-shrink: 0; margin-top: 1px; }
+
+.consent-actions{ display: flex; gap: 10px; }
+.consent-actions .btn{ flex: 1; }
+
+/* Note: this modal is a simulated, original consent UI for demo purposes —
+   it intentionally does not copy Roblox's real OAuth screen design. */
+</style>
+</head>
+<body>
+
+<div class="bg-layer" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-glow-primary"></div>
+  <div class="bg-glow-secondary"></div>
+  <div id="particles"></div>
+</div>
+
+<div class="auth-shell">
+  <header class="auth-top">
+    <div class="container">
+      <a href="index.html" class="brand">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/wavelink-logo.png" alt="WaveLink logo"></span>
+        WaveLink
+      </a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-card reveal in">
+      <div class="auth-mark" aria-hidden="true"><img src="assets/wavelink-logo.png" alt="WaveLink logo" width="26" height="26"></div>
+
+      <h1>Log in to WaveLink</h1>
+      <p class="sub">Connect your Roblox account to verify your identity and sync it with your communities.</p>
+
+      <button class="roblox-btn" id="robloxLoginBtn" type="button">
+        <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#0b0e14" stroke-width="2"/></svg></span>
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-label">Continue with Roblox</span>
+      </button>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <div class="auth-field">
+        <label for="workEmail">Work email</label>
+        <input type="email" id="workEmail" placeholder="you@yourstudio.com" autocomplete="email">
+      </div>
+      <a href="#" class="btn btn-ghost" style="width:100%;" id="emailContinueBtn">Continue with email</a>
+
+      <p class="auth-note">By continuing, you agree to WaveLink's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. WaveLink is not affiliated with Roblox Corporation.</p>
+    </div>
+  </main>
+
+  <div style="text-align:center; padding-bottom: 32px;">
+    <a href="index.html" class="auth-back">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to home
+    </a>
+  </div>
+</div>
+
+<!-- Simulated OAuth consent screen — demo only, original design.
+     In production this step happens on Roblox's own domain
+     (apis.roblox.com/oauth/v1/authorize), not on wavelink's site. -->
+<div class="consent-overlay" id="consentOverlay" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+  <div class="consent-card">
+    <div class="consent-header">
+      <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#0b0e14" stroke-width="2"/></svg></span>
+      <h3 id="consentTitle">Authorize WaveLink</h3>
+    </div>
+    <p class="consent-card-inner-title"><b>WaveLink</b> is requesting access to your Roblox account for verification.</p>
+    <ul class="consent-perms">
+      <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> View your username and avatar</li>
+      <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> View your group memberships</li>
+      <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Confirm account ownership</li>
+    </ul>
+    <div class="consent-actions">
+      <button class="btn btn-ghost" id="consentCancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="consentAuthorize" type="button">Authorize</button>
+    </div>
+  </div>
+</div>
+
+<script src="main.js" defer></script>
+<script src="auth-demo.js" defer></script>
+</body>
+</html>
